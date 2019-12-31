@@ -50,6 +50,13 @@ module.exports = require("os");
 
 /***/ }),
 
+/***/ 129:
+/***/ (function(module) {
+
+module.exports = require("child_process");
+
+/***/ }),
+
 /***/ 198:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -73,16 +80,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const wait_1 = __webpack_require__(521);
+const child_process_1 = __webpack_require__(129);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput("milliseconds");
-            core.debug(`Waiting ${ms} milliseconds ...`);
-            core.debug(new Date().toTimeString());
-            yield wait_1.wait(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput("time", new Date().toTimeString());
+            const name = core.getInput("name");
+            const template = core.getInput("template");
+            const useNpm = core.getInput("useNpm");
+            const usePnp = core.getInput("usePnp");
+            const scriptsVersion = core.getInput("scriptsVersion");
+            const args = [
+                name,
+                useNpm && "--use-npm",
+                usePnp && "--use-pnp",
+                scriptsVersion && `--scripts-version ${scriptsVersion}`,
+                template && `--template ${template}`,
+            ].filter(Boolean);
+            child_process_1.execSync(`npx create-react-app ${args.join(" ")}`);
+            child_process_1.execSync(`mv ${name}/* ${name}/.* .`);
+            child_process_1.execSync(`rm -rf ${name}`);
         }
         catch (error) {
             core.setFailed(error.message);
@@ -366,36 +382,6 @@ function getState(name) {
 }
 exports.getState = getState;
 //# sourceMappingURL=core.js.map
-
-/***/ }),
-
-/***/ 521:
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error("milliseconds not a number");
-            }
-            setTimeout(() => resolve("done!"), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
-
 
 /***/ }),
 
