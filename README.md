@@ -6,9 +6,9 @@
 
 Use this template to bootstrap the creation of a JavaScript action.:rocket:
 
-This template includes compilication support, tests, a validation workflow, publishing, and versioning guidance.  
+This template includes compilication support, tests, a validation workflow, publishing, and versioning guidance.
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+If you are new, there's also a simpler introduction. See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
 
 ## Create an action from this template
 
@@ -16,17 +16,20 @@ Click the `Use this Template` and provide the new repo details for your action
 
 ## Code in Master
 
-Install the dependencies  
+Install the dependencies
+
 ```bash
 $ npm install
 ```
 
 Build the typescript
+
 ```bash
 $ npm run build
 ```
 
-Run the tests :heavy_check_mark:  
+Run the tests :heavy_check_mark:
+
 ```bash
 $ npm test
 
@@ -55,9 +58,9 @@ import * as core from '@actions/core';
 ...
 
 async function run() {
-  try { 
+  try {
       ...
-  } 
+  }
   catch (error) {
     core.setFailed(error.message);
   }
@@ -70,9 +73,10 @@ See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/R
 
 ## Publish to a distribution branch
 
-Actions are run from GitHub repos.  We will create a releases branch and only checkin production modules (core in this case). 
+Actions are run from GitHub repos. We will create a releases branch and only checkin production modules (core in this case).
 
 Comment out node_modules in .gitignore and create a releases/v1 branch
+
 ```bash
 # comment out in distribution branches
 # node_modules/
@@ -90,7 +94,7 @@ $ git commit -a -m "prod dependencies"
 $ git push origin releases/v1
 ```
 
-Your action is now published! :rocket: 
+Your action is now published! :rocket:
 
 See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
 
@@ -101,7 +105,7 @@ You can now validate the action by referencing the releases/v1 branch
 ```yaml
 uses: actions/typescript-action@releases/v1
 with:
-  milliseconds: 1000
+    milliseconds: 1000
 ```
 
 See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:
@@ -111,7 +115,7 @@ See the [actions tab](https://github.com/actions/javascript-action/actions) for 
 After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and tested action
 
 ```yaml
-uses: actions/typescript-action@v1
+uses: jewetnitg/typescript-action@v1
 with:
-  milliseconds: 1000
+    milliseconds: 1000
 ```
