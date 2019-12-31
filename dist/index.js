@@ -97,7 +97,7 @@ function run() {
                 template && `--template ${template}`,
             ].filter(Boolean);
             child_process_1.execSync(`npx create-react-app ${args.join(" ")}`);
-            child_process_1.execSync(`cp -R ${name}/ .`);
+            child_process_1.execSync(`cp -R ${name}/* .`);
             child_process_1.execSync(`rm -rf ${name}`);
         }
         catch (error) {
