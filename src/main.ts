@@ -18,7 +18,7 @@ async function run(): Promise<void> {
         ].filter(Boolean);
 
         execSync(`npx create-react-app ${args.join(" ")}`);
-        execSync(`mv ${name}/* ${name}/.* .`);
+        execSync(`cp -R ${name}/ .`);
         execSync(`rm -rf ${name}`);
     } catch (error) {
         core.setFailed(error.message);
