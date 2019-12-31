@@ -2,9 +2,20 @@ name: "create-react-app"
 description: "create-react-app github action"
 author: "Rik Hoffbauer"
 inputs:
-    myInput: # change this
-        description: "input description here"
-        default: "default value if applicable"
+    name:
+        description: "Name of the project"
+        required: true
+    useNpm:
+        description: "Indicate npm should be used"
+        default: true
+    usePnp:
+        description: "Indicate pnp should be used"
+        default: false
+    template:
+        description: "specify a template for the created project"
+        default: "typescript"
+    scriptsVersion:
+        description: "use a non-standard version of react-scripts"
 runs:
     using: "node12"
     main: "dist/index.js"

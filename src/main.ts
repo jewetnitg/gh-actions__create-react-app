@@ -1,16 +1,25 @@
 import * as core from "@actions/core";
-import { wait } from "./wait";
+import { execSync } from "child_process";
 
 async function run(): Promise<void> {
     try {
-        const ms: string = core.getInput("milliseconds");
-        core.debug(`Waiting ${ms} milliseconds ...`);
+        const name = core.getInput("name");
+        const template = core.getInput("template");
+        const useNpm = core.getInput("useNpm");
+        const usePnp = core.getInput("usePnp");
+        const scriptsVersion = core.getInput("scriptsVersion");
 
-        core.debug(new Date().toTimeString());
-        await wait(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
+        const args = [
+            name,
+            useNpm && "--use-npm",
+            usePnp && "--use-pnp",
+            scriptsVersion && `--scripts-version ${scriptsVersion}`,
+            template && `--template ${template}`,
+        ].filter(Boolean);
 
-        core.setOutput("time", new Date().toTimeString());
+        execSync(`npx create-react-app ${args.join(" ")}`);
+        execSync(`mv ${name}/* ${name}/.* .`);
+        execSync(`rm -rf ${name}`);
     } catch (error) {
         core.setFailed(error.message);
     }
