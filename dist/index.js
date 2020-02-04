@@ -663,14 +663,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const __lib__1 = __webpack_require__(78);
-const string = (defaultValue) => (v) => v || defaultValue;
-const boolean = (defaultValue) => (v) => v == null || v === "" ? defaultValue : v === "true" || v === "1";
+const InputParsers_1 = __webpack_require__(541);
+const defaultName = (_a = process.env.GITHUB_REPOSITORY) === null || _a === void 0 ? void 0 : _a.split("/").pop();
 const action = __lib__1.ActionBuilder()
-    .input("name", string((_a = process.env.GITHUB_REPOSITORY) === null || _a === void 0 ? void 0 : _a.split("/").pop()))
-    .input("template", string("typescript"))
-    .input("useNpm", boolean(false))
-    .input("usePnp", boolean(false))
-    .input("scriptsVersion", string())
+    .input("name", InputParsers_1.string(defaultName))
+    .input("template", InputParsers_1.string("typescript"))
+    .input("useNpm", InputParsers_1.boolean(true))
+    .input("usePnp", InputParsers_1.boolean(false))
+    .input("scriptsVersion", InputParsers_1.string())
     .step("chore: initial commit", ({ childProcess }, inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const { exec, execa } = childProcess;
     const { name, scriptsVersion, template, useNpm, usePnp } = inputs;
@@ -3775,6 +3775,31 @@ const makeError = ({
 };
 
 module.exports = makeError;
+
+
+/***/ }),
+
+/***/ 541:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const parser = (parser) => (defaultValue) => v => {
+    const value = parser(v, defaultValue);
+    if (value == null) {
+        if (defaultValue == null) {
+            return null;
+        }
+        return defaultValue;
+    }
+    return value;
+};
+exports.string = parser((v) => v);
+exports.object = parser((v, defaultValue) => v ? Object.assign(Object.assign({}, (defaultValue || {})), JSON.parse(v)) : null);
+exports.array = parser((v) => v ? JSON.parse(v) : null);
+exports.boolean = parser((v) => v ? v === "true" || v === "1" : null);
+exports.date = parser((v) => (v ? new Date(v) : null));
 
 
 /***/ }),

@@ -1,21 +1,25 @@
 import { ActionBuilder } from "./__lib__";
+import { boolean, string } from "./__lib__/InputParsers";
 
 interface Inputs {
+    // default is repository name
     name?: string;
+    // default: true
     useNpm?: boolean;
+    // default: false
     usePnp?: boolean;
+    // default: undefined
     scriptsVersion?: string;
+    // default: "typescript"
     template?: string;
 }
 
-const string = (defaultValue?: string) => (v: string) => v || defaultValue;
-const boolean = (defaultValue?: boolean) => (v: string) =>
-    v == null || v === "" ? defaultValue : v === "true" || v === "1";
+const defaultName = process.env.GITHUB_REPOSITORY?.split("/").pop();
 
 const action = ActionBuilder<Inputs>()
-    .input("name", string(process.env.GITHUB_REPOSITORY?.split("/").pop()))
+    .input("name", string(defaultName))
     .input("template", string("typescript"))
-    .input("useNpm", boolean(false))
+    .input("useNpm", boolean(true))
     .input("usePnp", boolean(false))
     .input("scriptsVersion", string())
     .step("chore: initial commit", async ({ childProcess }, inputs) => {
