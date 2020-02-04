@@ -672,7 +672,7 @@ const action = __lib__1.ActionBuilder()
     .input("usePnp", boolean(false))
     .input("scriptsVersion", string())
     .step("chore: initial commit", ({ childProcess }, inputs) => __awaiter(void 0, void 0, void 0, function* () {
-    const { exec } = childProcess;
+    const { exec, execa } = childProcess;
     const { name, scriptsVersion, template, useNpm, usePnp } = inputs;
     const args = [
         name,
@@ -681,7 +681,7 @@ const action = __lib__1.ActionBuilder()
         scriptsVersion && `--scripts-version ${scriptsVersion}`,
         template && `--template ${template}`,
     ].filter(Boolean);
-    yield exec(`npx create-react-app ${args.join(" ")}`);
+    yield execa(`npx`, ["create-react-app", ...args]);
     yield exec(`cp -a ${name}/. .`);
     // TODO move removing github workflows to somewhere more generic,
     //  removing this isn't part of create-react-app, but of the whole
