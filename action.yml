@@ -1,6 +1,11 @@
 name: "create-react-app"
 description: "create-react-app github action"
 author: "Rik Hoffbauer"
+metadata:
+    tags:
+        - node
+        - react
+        - create-react-app
 inputs:
     name:
         description: "Name of the project"
