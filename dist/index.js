@@ -372,100 +372,6 @@ function onceStrict (fn) {
 
 /***/ }),
 
-/***/ 50:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ChildProcess_1 = __importDefault(__webpack_require__(331));
-const checkoutCommand = ({ options, hasBranch }) => __awaiter(void 0, void 0, void 0, function* () {
-    const { branch } = options;
-    const exists = yield hasBranch(branch);
-    return ["git", ["checkout", !exists && "-b", branch].filter(Boolean)];
-});
-const initialGitCommands = (git) => __awaiter(void 0, void 0, void 0, function* () {
-    return [
-        ["git", ["config", "--local", "user.name", git.options.user]],
-        ["git", ["config", "--local", "user.email", git.options.email]],
-        yield checkoutCommand(git),
-    ].filter(Boolean);
-});
-const Git = (options) => {
-    const { branch, user, token, repository } = options;
-    const { execa, exec } = ChildProcess_1.default();
-    const remoteUrl = `https://${user}:${token}@github.com/${repository}.git`;
-    let commands = [];
-    let shouldExecute = false;
-    const git = {
-        options: Object.freeze(Object.assign({}, options)),
-        getBranches: () => __awaiter(void 0, void 0, void 0, function* () {
-            return (yield exec(`git branch | tail`))
-                .split("\n")
-                .map(v => v.replace("*", "").replace(/\s+/g, ""));
-        }),
-        hasBranch: (branch) => __awaiter(void 0, void 0, void 0, function* () { return (yield git.getBranches()).includes(branch); }),
-        add: (files = ["."]) => {
-            if (shouldExecute) {
-                throw new Error(`Execute before performing another git action`);
-            }
-            commands.push([
-                "git",
-                [
-                    "add",
-                    ...(Array.isArray(files) ? files : [files]).filter(Boolean),
-                ],
-            ]);
-            return git;
-        },
-        commit: (message) => {
-            if (shouldExecute) {
-                throw new Error(`Execute before performing another git action`);
-            }
-            commands.push(["git", ["commit", "-m", message]]);
-            return git;
-        },
-        push: (flags = []) => {
-            if (shouldExecute) {
-                throw new Error(`Execute before performing another git action`);
-            }
-            commands.push([
-                "git",
-                ["push", "--force", "-u", remoteUrl, branch, ...flags],
-            ]);
-            shouldExecute = true;
-            return git;
-        },
-        execute: () => __awaiter(void 0, void 0, void 0, function* () {
-            for (const [command, args] of [
-                ...(yield initialGitCommands(git)),
-                ...commands,
-            ]) {
-                yield execa(command, args);
-            }
-            shouldExecute = false;
-            commands = yield initialGitCommands(git);
-        }),
-    };
-    return git;
-};
-exports.default = Git;
-
-
-/***/ }),
-
 /***/ 55:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -598,54 +504,6 @@ which.sync = whichSync
 
 /***/ }),
 
-/***/ 56:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__webpack_require__(470));
-const Action_1 = __importDefault(__webpack_require__(144));
-const ActionBuilder = () => {
-    const steps = [];
-    const inputDeserializers = [
-        //@ts-ignore
-        ["githubToken", String],
-    ];
-    const syntheticInputDeserializers = [];
-    const getInputs = () => syntheticInputDeserializers.reduce((inputs, [key, deserialize]) => (Object.assign(Object.assign({}, inputs), { [key]: deserialize(inputs) })), inputDeserializers.reduce((inputs, [key, deserialize]) => (Object.assign(Object.assign({}, inputs), { [key]: deserialize(core.getInput(key)) })), {}));
-    const builder = {
-        input: (name, deserializer) => {
-            inputDeserializers.push([name, deserializer]);
-            return builder;
-        },
-        syntheticInput: (name, deserializer) => {
-            syntheticInputDeserializers.push([name, deserializer]);
-            return builder;
-        },
-        step: (message, fn) => {
-            steps.push([message, fn]);
-            return builder;
-        },
-        build: () => Action_1.default(steps, getInputs),
-    };
-    return builder;
-};
-exports.default = ActionBuilder;
-
-
-/***/ }),
-
 /***/ 76:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -662,17 +520,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const __lib__1 = __webpack_require__(78);
-const InputParsers_1 = __webpack_require__(541);
+const helpers_1 = __webpack_require__(932);
 const defaultName = (_a = process.env.GITHUB_REPOSITORY) === null || _a === void 0 ? void 0 : _a.split("/").pop();
-const action = __lib__1.ActionBuilder()
-    .input("name", InputParsers_1.string(defaultName))
-    .input("template", InputParsers_1.string("typescript"))
-    .input("useNpm", InputParsers_1.boolean(true))
-    .input("usePnp", InputParsers_1.boolean(false))
-    .input("scriptsVersion", InputParsers_1.string())
-    .step("chore: initial commit", ({ childProcess }, inputs) => __awaiter(void 0, void 0, void 0, function* () {
-    const { exec, execa } = childProcess;
+const action = helpers_1.ActionBuilder()
+    .input("name", helpers_1.string(defaultName))
+    .input("template", helpers_1.string("typescript"))
+    .input("useNpm", helpers_1.boolean(true))
+    .input("usePnp", helpers_1.boolean(false))
+    .input("scriptsVersion", helpers_1.string())
+    .step("chore: initial commit", ({ exec, execa }, inputs) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, scriptsVersion, template, useNpm, usePnp } = inputs;
     const args = [
         name,
@@ -690,18 +546,6 @@ const action = __lib__1.ActionBuilder()
 }))
     .build();
 exports.default = action;
-
-
-/***/ }),
-
-/***/ 78:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ActionBuilder_1 = __webpack_require__(56);
-exports.ActionBuilder = ActionBuilder_1.default;
 
 
 /***/ }),
@@ -1065,6 +909,128 @@ module.exports = copySync
 
 /***/ }),
 
+/***/ 117:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ChildProcess_1 = __importDefault(__webpack_require__(665));
+const checkoutCommand = ({ options: { branch }, hasBranch, }) => __awaiter(void 0, void 0, void 0, function* () {
+    const exists = yield hasBranch(branch);
+    return [
+        "git",
+        ["checkout", !exists && "-b", branch].filter(Boolean),
+    ];
+});
+const initialGitCommands = (git) => __awaiter(void 0, void 0, void 0, function* () {
+    return [
+        ["git", ["config", "--local", "user.name", git.options.user]],
+        ["git", ["config", "--local", "user.email", git.options.email]],
+        yield checkoutCommand(git),
+    ].filter(Boolean);
+});
+const Git = (options) => {
+    const { branch, user, token, repository } = options;
+    const { execa, exec } = ChildProcess_1.default();
+    const remoteUrl = `https://${user}:${token}@github.com/${repository}.git`;
+    let commands = [];
+    let shouldExecute = false;
+    const git = {
+        options: Object.freeze(Object.assign({}, options)),
+        getBranches: () => __awaiter(void 0, void 0, void 0, function* () {
+            return (yield exec(`git branch | tail`))
+                .split("\n")
+                .map(v => v.replace("*", "").replace(/\s+/g, ""));
+        }),
+        hasBranch: (name) => __awaiter(void 0, void 0, void 0, function* () { return (yield git.getBranches()).includes(name); }),
+        add: (files = ["."]) => {
+            if (shouldExecute) {
+                throw new Error(`Execute before performing another git action`);
+            }
+            commands.push([
+                "git",
+                [
+                    "add",
+                    ...(Array.isArray(files) ? files : [files]).filter(Boolean),
+                ],
+            ]);
+            return git;
+        },
+        commit: (message) => {
+            if (shouldExecute) {
+                throw new Error(`Execute before performing another git action`);
+            }
+            commands.push(["git", ["commit", "-m", message]]);
+            return git;
+        },
+        push: (flags = []) => {
+            if (shouldExecute) {
+                throw new Error(`Execute before performing another git action`);
+            }
+            commands.push([
+                "git",
+                ["push", "--force", "-u", remoteUrl, branch, ...flags],
+            ]);
+            shouldExecute = true;
+            return git;
+        },
+        execute: () => __awaiter(void 0, void 0, void 0, function* () {
+            for (const [command, args] of [
+                ...(yield initialGitCommands(git)),
+                ...commands,
+            ]) {
+                yield execa(command, args);
+            }
+            shouldExecute = false;
+            commands = yield initialGitCommands(git);
+        }),
+    };
+    return git;
+};
+exports.default = Git;
+//# sourceMappingURL=Git.js.map
+
+/***/ }),
+
+/***/ 125:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const parser = (inputParser) => (defaultValue) => v => {
+    const value = inputParser(v, defaultValue);
+    if (value == null) {
+        if (defaultValue == null) {
+            return null;
+        }
+        return defaultValue;
+    }
+    return value;
+};
+exports.string = parser((v) => v);
+exports.stringarray = parser(str => str.split("\n").filter(Boolean));
+exports.object = parser((v, defaultValue) => v ? Object.assign(Object.assign({}, (defaultValue || {})), JSON.parse(v)) : null);
+exports.array = parser((v) => v ? JSON.parse(v) : null);
+exports.boolean = parser((v) => v ? v === "true" || v === "1" : null);
+exports.date = parser((v) => (v ? new Date(v) : null));
+//# sourceMappingURL=InputParsers.js.map
+
+/***/ }),
+
 /***/ 127:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -1249,64 +1215,6 @@ module.exports = {
 /***/ (function(module) {
 
 module.exports = require("child_process");
-
-/***/ }),
-
-/***/ 144:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__webpack_require__(470));
-const apis_1 = __importDefault(__webpack_require__(252));
-const Action = (steps, getInputs) => ({
-    run: (options = {}) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const api = apis_1.default(options);
-            for (const [message, fn] of steps) {
-                try {
-                    yield core.group(message, () => __awaiter(void 0, void 0, void 0, function* () {
-                        yield fn(api, getInputs());
-                        yield api.git
-                            .add(".")
-                            .commit(message)
-                            .execute();
-                    }));
-                }
-                catch (e) {
-                    core.setFailed(e.message);
-                    return;
-                }
-            }
-            yield api.git.push().execute();
-        }
-        catch (e) {
-            core.setFailed(e.message);
-        }
-    }),
-});
-exports.default = Action;
-
 
 /***/ }),
 
@@ -1980,21 +1888,6 @@ function patch (fs) {
 
 /***/ }),
 
-/***/ 252:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const Api_1 = __importDefault(__webpack_require__(648));
-exports.default = Api_1.default;
-
-
-/***/ }),
-
 /***/ 260:
 /***/ (function(__unusedmodule, exports) {
 
@@ -2126,6 +2019,94 @@ function mkdirs (p, opts, callback, made) {
 
 module.exports = mkdirs
 
+
+/***/ }),
+
+/***/ 302:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(470));
+const ChildProcess_1 = __importDefault(__webpack_require__(665));
+const Fs_1 = __importDefault(__webpack_require__(944));
+const paths = {
+    packageJson: "package.json",
+};
+const Npm = ({ defaultJsonIndent }) => {
+    const { execa } = ChildProcess_1.default();
+    const { writeJson, readJson } = Fs_1.default({ defaultJsonIndent });
+    const npm = {
+        install: Object.assign((dependencies = [], { bundle = false, exact = false, type = "prod", } = {}) => __awaiter(void 0, void 0, void 0, function* () {
+            const flags = dependencies.length
+                ? [
+                    `--save-${type}`,
+                    bundle && "--save-bundle",
+                    exact && "--save-exact",
+                ].filter(Boolean)
+                : [];
+            if (dependencies.length) {
+                core.info(`Adding ${type} dependencies: ${dependencies.join(", ")}`);
+            }
+            yield execa(`npm`, [`install`, ...flags, ...dependencies], {
+                env: process.env,
+            });
+        }), {
+            dev: (dependencies = [], options = {}) => __awaiter(void 0, void 0, void 0, function* () { return npm.install(dependencies, Object.assign(Object.assign({}, options), { type: "dev" })); }),
+        }),
+        packageJson: {
+            scripts: {
+                add: (scripts) => __awaiter(void 0, void 0, void 0, function* () {
+                    const keys = Object.keys(scripts).join(", ");
+                    if (!keys.length) {
+                        return;
+                    }
+                    core.info(`Adding ${keys} scripts to package.json`);
+                    return npm.packageJson.transform(pkg => (Object.assign(Object.assign({}, pkg), { scripts: Object.assign(Object.assign({}, (pkg.scripts || {})), scripts) })));
+                }),
+            },
+            transform: (transformer) => __awaiter(void 0, void 0, void 0, function* () {
+                const pkg = yield readJson(paths.packageJson);
+                const transformedPkg = (yield transformer(pkg)) || pkg;
+                yield writeJson(paths.packageJson, transformedPkg);
+            }),
+        },
+        run: (scriptName, args = []) => __awaiter(void 0, void 0, void 0, function* () {
+            core.info(`Running npm script "${scriptName}"`);
+            if (args.length) {
+                core.info(`Script arguments: ${args.join(", ")}"`);
+            }
+            yield execa("npm", [
+                "run",
+                scriptName,
+                ...(args.length ? ["--", ...args] : []),
+            ]);
+        }),
+    };
+    return npm;
+};
+exports.default = Npm;
+//# sourceMappingURL=Npm.js.map
 
 /***/ }),
 
@@ -2349,32 +2330,6 @@ module.exports = {
   pathExists: u(pathExists),
   pathExistsSync: fs.existsSync
 }
-
-
-/***/ }),
-
-/***/ 331:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = __webpack_require__(129);
-const execa_1 = __importDefault(__webpack_require__(955));
-const ChildProcess = () => {
-    //noinspection UnnecessaryLocalVariableJS
-    const api = {
-        exec: (command, options = {}) => new Promise((resolve, reject) => child_process_1.exec(command, options, (err, stdout, stderr) => err || stderr
-            ? reject(err || new Error(stderr))
-            : resolve(stdout))),
-        execa: execa_1.default,
-    };
-    return api;
-};
-exports.default = ChildProcess;
 
 
 /***/ }),
@@ -2857,7 +2812,7 @@ exports.getState = getState;
 
 const file = __webpack_require__(149)
 const link = __webpack_require__(900)
-const symlink = __webpack_require__(849)
+const symlink = __webpack_require__(802)
 
 module.exports = {
   // file
@@ -3212,20 +3167,11 @@ rimraf.sync = rimrafSync
 
 /***/ }),
 
-/***/ 483:
+/***/ 493:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -3233,66 +3179,36 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
-const fs = __importStar(__webpack_require__(226));
-const Fs = ({ defaultJsonIndent }) => {
-    const api = Object.assign(Object.assign({}, fs), { detectJsonIndent: (path) => __awaiter(void 0, void 0, void 0, function* () {
-            const textContent = (yield api.readFile(path)).toString();
-            try {
-                JSON.parse(textContent);
-            }
-            catch (err) {
-                throw new Error(`Unable to detect json indent, provided string is not valid JSON`);
-            }
-            const indeterminableValues = ["{}", "[]", "null", "true", "false"];
-            if (indeterminableValues.includes(textContent) ||
-                // is a string
-                textContent.startsWith(`"`) ||
-                // is a number
-                textContent.match(/^\d+$/g)) {
-                return null;
-            }
-            const lines = textContent
-                .split("\n")
-                // remove empty lines
-                .filter(line => line && !line.match(/^\s+$/g));
-            if (lines.length < 3) {
-                return null;
-            }
-            // find a "regular" line
-            const line = lines.find(line => line.match(/^\s+"/g));
-            if (!line) {
-                return null;
-            }
-            return line.slice(0, line.indexOf(`"`));
-        }), writeJson: (path, content) => __awaiter(void 0, void 0, void 0, function* () {
-            const indent = (yield api.pathExists(path))
-                ? (yield api.detectJsonIndent(path)) || defaultJsonIndent
-                : defaultJsonIndent;
-            core.info(`Writing json file "${path}"`);
-            const json = JSON.stringify(content, null, indent);
-            core.info(json);
-            return api.writeFile(path, json);
-        }), writeFiles: (files) => __awaiter(void 0, void 0, void 0, function* () {
-            const entries = Object.entries(files);
-            for (const [path, content] of entries) {
-                if (typeof content === "string" || Buffer.isBuffer(content)) {
-                    yield api.writeFile(path, content);
-                }
-                else if (typeof content === "object") {
-                    yield api.writeJson(path, content);
-                }
-                else {
-                    throw new Error(`Unable to write file ${path}, ` +
-                        `content has an invalid type "${typeof content}"`);
-                }
-            }
-        }) });
-    return api;
+const Action_1 = __importDefault(__webpack_require__(849));
+const ActionBuilder = () => {
+    const steps = [];
+    const inputDeserializers = [];
+    const syntheticInputDeserializers = [];
+    const getInputs = () => syntheticInputDeserializers.reduce((inputs, [key, deserialize]) => (Object.assign(Object.assign({}, inputs), { [key]: deserialize(inputs) })), inputDeserializers.reduce((inputs, [key, deserialize]) => (Object.assign(Object.assign({}, inputs), { [key]: deserialize(core.getInput(key)) })), {}));
+    const builder = {
+        input: (name, deserializer) => {
+            inputDeserializers.push([name, deserializer]);
+            return builder;
+        },
+        syntheticInput: (name, deserializer) => {
+            syntheticInputDeserializers.push([name, deserializer]);
+            return builder;
+        },
+        step: (message, fn) => {
+            steps.push([message, fn]);
+            return builder;
+        },
+        build: () => Action_1.default(steps, getInputs),
+    };
+    return builder;
 };
-exports.default = Fs;
-
+exports.default = ActionBuilder;
+//# sourceMappingURL=ActionBuilder.js.map
 
 /***/ }),
 
@@ -3775,32 +3691,6 @@ const makeError = ({
 };
 
 module.exports = makeError;
-
-
-/***/ }),
-
-/***/ 541:
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const parser = (parser) => (defaultValue) => v => {
-    const value = parser(v, defaultValue);
-    if (value == null) {
-        if (defaultValue == null) {
-            return null;
-        }
-        return defaultValue;
-    }
-    return value;
-};
-exports.string = parser((v) => v);
-exports.stringarray = parser(str => str.split("\n").filter(Boolean));
-exports.object = parser((v, defaultValue) => v ? Object.assign(Object.assign({}, (defaultValue || {})), JSON.parse(v)) : null);
-exports.array = parser((v) => v ? JSON.parse(v) : null);
-exports.boolean = parser((v) => v ? v === "true" || v === "1" : null);
-exports.date = parser((v) => (v ? new Date(v) : null));
 
 
 /***/ }),
@@ -5052,34 +4942,6 @@ module.exports.default = mimicFn;
 
 /***/ }),
 
-/***/ 648:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const ChildProcess_1 = __importDefault(__webpack_require__(331));
-const Fs_1 = __importDefault(__webpack_require__(483));
-const Git_1 = __importDefault(__webpack_require__(50));
-const Npm_1 = __importDefault(__webpack_require__(706));
-const Api = ({ git: { token = process.env.GITHUB_TOKEN || "", user = process.env.GITHUB_ACTOR || "", email = "action@github.com", branch = "develop", repository = process.env.GITHUB_REPOSITORY || "", } = {}, defaultJsonIndent = 2, } = {}) => {
-    const api = {
-        fs: Fs_1.default({ defaultJsonIndent }),
-        npm: Npm_1.default({ defaultJsonIndent }),
-        childProcess: ChildProcess_1.default(),
-        git: Git_1.default({ token, user, email, branch, repository }),
-        githubToken: token,
-    };
-    return api;
-};
-exports.default = Api;
-
-
-/***/ }),
-
 /***/ 652:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -5179,6 +5041,43 @@ if (process.platform === 'linux') {
   )
 }
 
+
+/***/ }),
+
+/***/ 665:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const child_process_1 = __webpack_require__(129);
+const execa_1 = __importDefault(__webpack_require__(955));
+const ChildProcess = () => {
+    //noinspection UnnecessaryLocalVariableJS
+    const api = {
+        exec: (command, options = {}) => __awaiter(void 0, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => child_process_1.exec(command, options, (err, stdout, stderr) => err || stderr
+                ? reject(err || new Error(stderr))
+                : resolve(stdout)));
+        }),
+        execa: execa_1.default,
+    };
+    return api;
+};
+exports.default = ChildProcess;
+//# sourceMappingURL=ChildProcess.js.map
 
 /***/ }),
 
@@ -5418,94 +5317,6 @@ function outputJson (file, data, options, callback) {
 }
 
 module.exports = outputJson
-
-
-/***/ }),
-
-/***/ 706:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__webpack_require__(470));
-const ChildProcess_1 = __importDefault(__webpack_require__(331));
-const Fs_1 = __importDefault(__webpack_require__(483));
-const paths = {
-    packageJson: "package.json",
-};
-const Npm = ({ defaultJsonIndent }) => {
-    const { execa } = ChildProcess_1.default();
-    const { writeJson, readJson } = Fs_1.default({ defaultJsonIndent });
-    const npm = {
-        install: Object.assign((dependencies = [], { bundle = false, exact = false, type = "prod", } = {}) => __awaiter(void 0, void 0, void 0, function* () {
-            const flags = dependencies.length
-                ? [
-                    `--save-${type}`,
-                    bundle && "--save-bundle",
-                    exact && "--save-exact",
-                ].filter(Boolean)
-                : [];
-            if (dependencies.length) {
-                core.info(`Adding ${type} dependencies: ${dependencies.join(", ")}`);
-            }
-            yield execa(`npm`, [`install`, ...flags, ...dependencies], {
-                env: process.env,
-            });
-        }), {
-            dev: (dependencies = [], options = {}) => npm.install(dependencies, Object.assign(Object.assign({}, options), { type: "dev" })),
-        }),
-        packageJson: {
-            scripts: {
-                add: (scripts) => __awaiter(void 0, void 0, void 0, function* () {
-                    const keys = Object.keys(scripts).join(", ");
-                    if (!keys.length) {
-                        return;
-                    }
-                    core.info(`Adding ${keys} scripts to package.json`);
-                    return npm.packageJson.transform(pkg => (Object.assign(Object.assign({}, pkg), { scripts: Object.assign(Object.assign({}, (pkg.scripts || {})), scripts) })));
-                }),
-            },
-            transform: (transformer) => __awaiter(void 0, void 0, void 0, function* () {
-                const pkg = yield readJson(paths.packageJson);
-                const transformedPkg = (yield transformer(pkg)) || pkg;
-                yield writeJson(paths.packageJson, transformedPkg);
-            }),
-        },
-        run: (scriptName, args = []) => __awaiter(void 0, void 0, void 0, function* () {
-            core.info(`Running npm script "${scriptName}"`);
-            if (args.length) {
-                core.info(`Script arguments: ${args.join(", ")}"`);
-            }
-            yield execa("npm", [
-                "run",
-                scriptName,
-                ...(args.length ? ["--", ...args] : []),
-            ]);
-        }),
-    };
-    return npm;
-};
-exports.default = Npm;
 
 
 /***/ }),
@@ -5870,56 +5681,29 @@ module.exports = {
 
 /***/ }),
 
-/***/ 818:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ 786:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-module.exports = isexe
-isexe.sync = sync
+"use strict";
 
-var fs = __webpack_require__(747)
-
-function checkPathExt (path, options) {
-  var pathext = options.pathExt !== undefined ?
-    options.pathExt : process.env.PATHEXT
-
-  if (!pathext) {
-    return true
-  }
-
-  pathext = pathext.split(';')
-  if (pathext.indexOf('') !== -1) {
-    return true
-  }
-  for (var i = 0; i < pathext.length; i++) {
-    var p = pathext[i].toLowerCase()
-    if (p && path.substr(-p.length).toLowerCase() === p) {
-      return true
-    }
-  }
-  return false
-}
-
-function checkStat (stat, path, options) {
-  if (!stat.isSymbolicLink() && !stat.isFile()) {
-    return false
-  }
-  return checkPathExt(path, options)
-}
-
-function isexe (path, options, cb) {
-  fs.stat(path, function (er, stat) {
-    cb(er, er ? false : checkStat(stat, path, options))
-  })
-}
-
-function sync (path, options) {
-  return checkStat(fs.statSync(path), path, options)
-}
-
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ChildProcess_1 = __importDefault(__webpack_require__(665));
+const Fs_1 = __importDefault(__webpack_require__(944));
+const Git_1 = __importDefault(__webpack_require__(117));
+const Npm_1 = __importDefault(__webpack_require__(302));
+const Api = ({ git: { token = process.env.GITHUB_TOKEN || "", user = process.env.GITHUB_ACTOR || "", email = "action@github.com", branch = "develop", repository = process.env.GITHUB_REPOSITORY || "", } = {}, defaultJsonIndent = 2, } = {}) => {
+    const api = Object.assign(Object.assign(Object.assign({}, Fs_1.default({ defaultJsonIndent })), ChildProcess_1.default()), { npm: Npm_1.default({ defaultJsonIndent }), git: Git_1.default({ token, user, email, branch, repository }) });
+    return api;
+};
+exports.default = Api;
+//# sourceMappingURL=Api.js.map
 
 /***/ }),
 
-/***/ 849:
+/***/ 802:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
@@ -5987,6 +5771,113 @@ module.exports = {
   createSymlinkSync
 }
 
+
+/***/ }),
+
+/***/ 818:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = isexe
+isexe.sync = sync
+
+var fs = __webpack_require__(747)
+
+function checkPathExt (path, options) {
+  var pathext = options.pathExt !== undefined ?
+    options.pathExt : process.env.PATHEXT
+
+  if (!pathext) {
+    return true
+  }
+
+  pathext = pathext.split(';')
+  if (pathext.indexOf('') !== -1) {
+    return true
+  }
+  for (var i = 0; i < pathext.length; i++) {
+    var p = pathext[i].toLowerCase()
+    if (p && path.substr(-p.length).toLowerCase() === p) {
+      return true
+    }
+  }
+  return false
+}
+
+function checkStat (stat, path, options) {
+  if (!stat.isSymbolicLink() && !stat.isFile()) {
+    return false
+  }
+  return checkPathExt(path, options)
+}
+
+function isexe (path, options, cb) {
+  fs.stat(path, function (er, stat) {
+    cb(er, er ? false : checkStat(stat, path, options))
+  })
+}
+
+function sync (path, options) {
+  return checkStat(fs.statSync(path), path, options)
+}
+
+
+/***/ }),
+
+/***/ 849:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(470));
+const apis_1 = __importDefault(__webpack_require__(949));
+const Action = (steps, getInputs) => ({
+    run: (options = {}) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const api = apis_1.default(options);
+            for (const [message, fn] of steps) {
+                try {
+                    yield core.group(message, () => __awaiter(void 0, void 0, void 0, function* () {
+                        yield fn(api, getInputs());
+                        yield api.git
+                            .add(".")
+                            .commit(message)
+                            .execute();
+                    }));
+                }
+                catch (e) {
+                    core.setFailed(e.message);
+                    return;
+                }
+            }
+            yield api.git.push().execute();
+        }
+        catch (e) {
+            core.setFailed(e.message);
+        }
+    }),
+});
+exports.default = Action;
+//# sourceMappingURL=Action.js.map
 
 /***/ }),
 
@@ -6493,6 +6384,123 @@ module.exports = {
   symlinkPathsSync
 }
 
+
+/***/ }),
+
+/***/ 932:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+var Action_1 = __webpack_require__(849);
+exports.Action = Action_1.default;
+var ActionBuilder_1 = __webpack_require__(493);
+exports.ActionBuilder = ActionBuilder_1.default;
+__export(__webpack_require__(125));
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ 944:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(470));
+const fs = __importStar(__webpack_require__(226));
+const Fs = ({ defaultJsonIndent }) => {
+    const api = Object.assign(Object.assign({}, fs), { detectJsonIndent: (path) => __awaiter(void 0, void 0, void 0, function* () {
+            const textContent = (yield api.readFile(path)).toString();
+            try {
+                JSON.parse(textContent);
+            }
+            catch (err) {
+                throw new Error(`Unable to detect json indent, provided string is not valid JSON`);
+            }
+            const indeterminableValues = ["{}", "[]", "null", "true", "false"];
+            if (indeterminableValues.includes(textContent) ||
+                // is a string
+                textContent.startsWith(`"`) ||
+                // is a number
+                textContent.match(/^\d+$/g)) {
+                return null;
+            }
+            const lines = textContent
+                .split("\n")
+                // remove empty lines
+                .filter(line => line && !line.match(/^\s+$/g));
+            if (lines.length < 3) {
+                return null;
+            }
+            // find a "regular" line
+            const line = lines.find(l => l.match(/^\s+"/g));
+            if (!line) {
+                return null;
+            }
+            return line.slice(0, line.indexOf(`"`));
+        }), writeJson: (path, content) => __awaiter(void 0, void 0, void 0, function* () {
+            const indent = (yield api.pathExists(path))
+                ? (yield api.detectJsonIndent(path)) || defaultJsonIndent
+                : defaultJsonIndent;
+            core.info(`Writing json file "${path}"`);
+            const json = JSON.stringify(content, null, indent);
+            core.info(json);
+            return api.writeFile(path, json);
+        }), writeFiles: (files) => __awaiter(void 0, void 0, void 0, function* () {
+            const entries = Object.entries(files);
+            for (const [path, content] of entries) {
+                if (typeof content === "string" || Buffer.isBuffer(content)) {
+                    yield api.writeFile(path, content);
+                }
+                else if (typeof content === "object") {
+                    yield api.writeJson(path, content);
+                }
+                else {
+                    throw new Error(`Unable to write file ${path}, ` +
+                        `content has an invalid type "${typeof content}"`);
+                }
+            }
+        }) });
+    return api;
+};
+exports.default = Fs;
+//# sourceMappingURL=Fs.js.map
+
+/***/ }),
+
+/***/ 949:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Api_1 = __importDefault(__webpack_require__(786));
+exports.default = Api_1.default;
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 

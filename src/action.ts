@@ -1,5 +1,4 @@
-import { ActionBuilder } from "./__lib__";
-import { boolean, string } from "./__lib__/InputParsers";
+import { ActionBuilder, boolean, string } from "@gh-actions/helpers";
 
 interface Inputs {
     // default is repository name
@@ -22,8 +21,7 @@ const action = ActionBuilder<Inputs>()
     .input("useNpm", boolean(true))
     .input("usePnp", boolean(false))
     .input("scriptsVersion", string())
-    .step("chore: initial commit", async ({ childProcess }, inputs) => {
-        const { exec, execa } = childProcess;
+    .step("chore: initial commit", async ({ exec, execa }, inputs) => {
         const { name, scriptsVersion, template, useNpm, usePnp } = inputs;
         const args = [
             name,
