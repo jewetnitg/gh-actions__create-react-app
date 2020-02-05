@@ -15,6 +15,7 @@ const parser = <T>(parser: Parser<T>) => (defaultValue?: T): Parser<T> => v => {
 };
 
 export const string = parser((v: string) => v);
+export const stringarray = parser(str => str.split("\n").filter(Boolean));
 export const object = parser(<T>(v: string, defaultValue?: T) =>
     v ? { ...(defaultValue || {}), ...(JSON.parse(v) as T) } : null,
 );

@@ -3796,6 +3796,7 @@ const parser = (parser) => (defaultValue) => v => {
     return value;
 };
 exports.string = parser((v) => v);
+exports.stringarray = parser(str => str.split("\n").filter(Boolean));
 exports.object = parser((v, defaultValue) => v ? Object.assign(Object.assign({}, (defaultValue || {})), JSON.parse(v)) : null);
 exports.array = parser((v) => v ? JSON.parse(v) : null);
 exports.boolean = parser((v) => v ? v === "true" || v === "1" : null);
